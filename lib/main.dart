@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:expenses/components/chart.dart';
 import 'package:expenses/components/transaction_form.dart';
 import 'package:expenses/components/transaction_list.dart';
 import 'package:expenses/models/transaction.dart';
@@ -19,23 +20,24 @@ class ExpensesApp extends StatelessWidget {
     return MaterialApp(
       home: HomePage(),
       theme: theme.copyWith(
-        colorScheme: theme.colorScheme.copyWith(
-          primary: Colors.purple,
-          secondary: Colors.amber,
-        ),
-        textTheme: theme.textTheme.copyWith(
-          headline6: const TextStyle(
-            fontFamily: 'OpenSans',
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
+          colorScheme: theme.colorScheme.copyWith(
+            primary: Colors.purple,
+            secondary: Colors.amber,
           ),
-        ),
-        appBarTheme: theme.appBarTheme.copyWith(
-          titleTextStyle: const TextStyle(fontFamily: "OpenSans", fontSize: 20,),
-
-        )
-      ),
+          textTheme: theme.textTheme.copyWith(
+            headline6: const TextStyle(
+              fontFamily: 'OpenSans',
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          appBarTheme: theme.appBarTheme.copyWith(
+            titleTextStyle: const TextStyle(
+              fontFamily: "OpenSans",
+              fontSize: 20,
+            ),
+          )),
     );
   }
 }
@@ -48,39 +50,53 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _transactions = [
+  final List<Transaction> _transactions = [
+    /*
+    Transaction(
+      id: "t0",
+      title: "Novo Tênis",
+      value: 315.00,
+      date: DateTime.now().subtract(const Duration(days: 33)),
+    ),
     Transaction(
       id: "t1",
       title: "Novo Tênis",
       value: 315.00,
-      date: DateTime.now(),
+      date: DateTime.now().subtract(const Duration(days: 3)),
     ),
     Transaction(
       id: "t2",
       title: "Conta de Luz",
       value: 280.00,
-      date: DateTime.now(),
+      date: DateTime.now().subtract(const Duration(days: 2)),
     ),
     Transaction(
       id: "t3",
       title: "Gas",
       value: 100.00,
-      date: DateTime.now(),
+      date: DateTime.now().subtract(const Duration(days: 5)),
     ),
     Transaction(
       id: "t4",
       title: "Conta #1",
       value: 234.00,
-      date: DateTime.now(),
+      date: DateTime.now().subtract(const Duration(days: 6)),
     ),
+    */
   ];
 
-  _addTranasction(String title, double value) {
+  List<Transaction> get _recentTransactions {
+    return _transactions.where((tr) {
+      return tr.date.isAfter(DateTime.now().subtract(const Duration(days: 7)));
+    }).toList();
+  }
+
+  _addTranasction(String title, double value, DateTime date) {
     final newTransaction = Transaction(
       id: Random().nextDouble().toString(),
       title: title,
       value: value,
-      date: DateTime.now(),
+      date: date,
     );
 
     setState(() {
@@ -88,6 +104,12 @@ class _HomePageState extends State<HomePage> {
     });
 
     Navigator.of(context).pop();
+  }
+
+  _removeTransaction(String id) {
+    setState(() {
+      _transactions.removeWhere((tr) => tr.id == id);
+    });
   }
 
   _openTransactionModal(BuildContext context) {
@@ -119,14 +141,8 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              child: Card(
-                color: Colors.blue,
-                elevation: 5,
-                child: Text("Gráfico"),
-              ),
-            ),
-            TransactionList(_transactions),
+            Chart(_recentTransactions),
+            TransactionList(_transactions, _removeTransaction),
           ],
         ),
       ),
